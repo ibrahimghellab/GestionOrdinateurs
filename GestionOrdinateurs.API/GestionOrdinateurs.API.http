@@ -1,0 +1,173 @@
+@GestionOrdinateurs.API_HostAddress = http://localhost:5169
+
+GET {{GestionOrdinateurs.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+# ---------- Partie 1 : ajout d'ordinateurs ----------
+# typeOrdi : 0 = Portable, 1 = Fixe, 2 = Server
+# etat : 0 = EnService, 1 = EnPanne, 2 = EnMaintenance, 3 = HorsService, 4 = Lent, 5 = Reparable
+
+POST {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs
+Content-Type: application/json
+
+{
+  "id": 1,
+  "nom": "Dell XPS 15",
+  "etat": 0,
+  "stock": 3,
+  "prix": 1899.99,
+  "caracteristiques": { "ramGo": 32, "stockageGo": 1024, "typeOrdi": 0, "marque": "Dell", "processeur": "Intel Core i7" }
+}
+
+###
+
+POST {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs
+Content-Type: application/json
+
+{
+  "id": 2,
+  "nom": "HP EliteDesk 800",
+  "etat": 0,
+  "stock": 5,
+  "prix": 749.90,
+  "caracteristiques": { "ramGo": 16, "stockageGo": 512, "typeOrdi": 1, "marque": "HP", "processeur": "Intel Core i5" }
+}
+
+###
+
+POST {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs
+Content-Type: application/json
+
+{
+  "id": 3,
+  "nom": "Lenovo ThinkPad E14",
+  "etat": 0,
+  "stock": 0,
+  "prix": 899.00,
+  "caracteristiques": { "ramGo": 4, "stockageGo": 256, "typeOrdi": 0, "marque": "Lenovo", "processeur": "AMD Ryzen 5" }
+}
+
+###
+
+POST {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs
+Content-Type: application/json
+
+{
+  "id": 4,
+  "nom": "Dell PowerEdge R650",
+  "etat": 0,
+  "stock": 1,
+  "prix": 4500.00,
+  "caracteristiques": { "ramGo": 128, "stockageGo": 4096, "typeOrdi": 2, "marque": "Dell", "processeur": "Intel Xeon Silver" }
+}
+
+###
+
+POST {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs
+Content-Type: application/json
+
+{
+  "id": 5,
+  "nom": "Acer Aspire TC",
+  "etat": 0,
+  "stock": 2,
+  "prix": 499.99,
+  "caracteristiques": { "ramGo": 8, "stockageGo": 512, "typeOrdi": 1, "marque": "Acer", "processeur": "Intel Core i3" }
+}
+
+###
+
+# Affichage de tous les ordinateurs
+GET {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs
+Accept: application/json
+
+###
+
+# ---------- Partie 2 : réparations ----------
+
+# Lance une réparation simultanée sur chaque ordinateur (techniciens attribués à tour de rôle)
+POST {{GestionOrdinateurs.API_HostAddress}}/api/Reparations/SimulerReparation
+
+###
+
+# Affichage de toutes les réparations
+GET {{GestionOrdinateurs.API_HostAddress}}/api/Reparations
+Accept: application/json
+
+###
+
+# Historique des réparations (record HistoriqueReparationRecord)
+GET {{GestionOrdinateurs.API_HostAddress}}/api/Reparations/historique
+Accept: application/json
+
+###
+
+# ---------- Partie 3 : diagnostic ----------
+
+# Le Lenovo (4 Go de RAM) devient Lent (etat 4) -> diagnostic attendu : "Ajouter RAM"
+PUT {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs/3
+Content-Type: application/json
+
+{
+  "id": 3,
+  "nom": "Lenovo ThinkPad E14",
+  "etat": 4,
+  "stock": 0,
+  "prix": 899.00,
+  "caracteristiques": { "ramGo": 4, "stockageGo": 256, "typeOrdi": 0, "marque": "Lenovo", "processeur": "AMD Ryzen 5" }
+}
+
+###
+
+# L'Acer devient HorsService (etat 3) -> diagnostic attendu : "Remplacement"
+PUT {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs/5
+Content-Type: application/json
+
+{
+  "id": 5,
+  "nom": "Acer Aspire TC",
+  "etat": 3,
+  "stock": 2,
+  "prix": 499.99,
+  "caracteristiques": { "ramGo": 8, "stockageGo": 512, "typeOrdi": 1, "marque": "Acer", "processeur": "Intel Core i3" }
+}
+
+###
+
+# Diagnostic attendu : "Aucune action" (EnService)
+GET {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs/1/diagnostic
+
+###
+
+# Diagnostic attendu : "Ajouter RAM"
+GET {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs/3/diagnostic
+
+###
+
+# Diagnostic attendu : "Remplacement"
+GET {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs/5/diagnostic
+
+###
+
+# Statistiques du parc (tuple nommé déconstruit dans le controller)
+GET {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs/statistiques
+Accept: application/json
+
+###
+
+# ---------- Partie 4 : indexeur ----------
+
+# Recherche dans l'inventaire par nom (indexeur this[string nom], sans tenir compte de la casse)
+# %20 = espace dans une URL
+GET {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs/inventaire/Dell%20XPS%2015
+Accept: application/json
+
+###
+
+# Nom inexistant -> 404
+GET {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs/inventaire/Inconnu
+Accept: application/json
+
+###

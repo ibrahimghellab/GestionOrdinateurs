@@ -1,0 +1,14 @@
+﻿@page "/"
+
+<PageTitle>Accueil</PageTitle>
+
+<h1>Atelier informatique</h1>
+
+<AuthorizeView>
+    <Authorized>
+        <p>Bienvenue @context.User.Identity?.Name.</p>
+    </Authorized>
+    <NotAuthorized>
+        <p>Connectez-vous pour accéder à la liste des ordinateurs et à l'historique des réparations.</p>
+    </NotAuthorized>
+</AuthorizeView>

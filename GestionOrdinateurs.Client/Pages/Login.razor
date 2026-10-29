@@ -1,0 +1,45 @@
+@page "/login"
+
+@inject IAuthentificationService AuthentificationService
+@inject NavigationManager Navigation
+
+<PageTitle>Connexion</PageTitle>
+
+<h1>Connexion</h1>
+
+<div class="mb-3" style="max-width: 300px">
+    <label for="login" class="form-label">Utilisateur</label>
+    <input id="login" class="form-control" @bind="login" />
+</div>
+
+<button class="btn btn-primary" @onclick="SeConnecter" disabled="@string.IsNullOrWhiteSpace(login)">
+    Se connecter
+</button>
+
+@if (messageErreur is not null)
+{
+    <div class="alert alert-danger mt-3">@messageErreur</div>
+}
+
+@code {
+    private string login = "";
+
+    private string? messageErreur;
+
+    private async Task SeConnecter()
+    {
+        messageErreur = null;
+
+        try
+        {
+            if (await AuthentificationService.ConnecterAsync(login))
+                Navigation.NavigateTo("/");
+            else
+                messageErreur = $"L'utilisateur {login} n'existe pas.";
+        }
+        catch (HttpRequestException)
+        {
+            messageErreur = "Le service d'authentification est indisponible.";
+        }
+    }
+}

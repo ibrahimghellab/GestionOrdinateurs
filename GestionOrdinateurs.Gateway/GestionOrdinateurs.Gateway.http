@@ -1,0 +1,14 @@
+@GestionOrdinateurs.Gateway_HostAddress = http://localhost:5010
+
+# Le token se récupère avec POST http://localhost:5198/api/Authentication/login?login=user1
+@token = colle_le_token_ici
+
+GET {{GestionOrdinateurs.Gateway_HostAddress}}/api/Ordinateurs
+Authorization: Bearer {{token}}
+
+###
+
+GET {{GestionOrdinateurs.Gateway_HostAddress}}/api/Reparations/historique
+Authorization: Bearer {{token}}
+
+###

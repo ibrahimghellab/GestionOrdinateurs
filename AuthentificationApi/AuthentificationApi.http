@@ -1,0 +1,6 @@
+@AuthentificationApi_HostAddress = http://localhost:5198
+
+POST {{AuthentificationApi_HostAddress}}/api/Authentication/login?login=user1
+Accept: application/json
+
+###

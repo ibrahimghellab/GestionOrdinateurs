@@ -1,0 +1,62 @@
+@page "/ordinateurs"
+@attribute [Authorize]
+
+@inject IOrdinateurApiService OrdinateurApiService
+
+<PageTitle>Ordinateurs</PageTitle>
+
+<h1>Liste des ordinateurs</h1>
+
+@if (messageErreur is not null)
+{
+    <div class="alert alert-danger">@messageErreur</div>
+}
+else if (ordinateurs is null)
+{
+    <p><em>Chargement...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Prix</th>
+                <th>Devise</th>
+                <th>Vendu</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ordinateur in ordinateurs)
+            {
+                <tr>
+                    <td>@ordinateur.Nom</td>
+                    <td>@ordinateur.Prix.ToString("N2")</td>
+                    <td>@Devise</td>
+                    <td>@(ordinateur.Vendu ? "Oui" : "Non")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    //Les prix sont enregistrés en euros dans la base
+    private const string Devise = "EUR";
+
+    private List<Ordinateur>? ordinateurs;
+
+    private string? messageErreur;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            ordinateurs = await OrdinateurApiService.GetOrdinateursAsync();
+        }
+        catch (HttpRequestException ex)
+        {
+            messageErreur = ApiErreurs.Message(ex);
+        }
+    }
+}
