@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -60,24 +59,25 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Configuration JWT
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "";
-var key = Encoding.ASCII.GetBytes(jwtKey);
-
+// Configuration JWT : les tokens sont émis et signés par Keycloak
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
+    //L'émetteur et les clés de signature sont lus dans la configuration publiée par Keycloak
+    options.Authority = builder.Configuration["Keycloak:Authority"];
     options.RequireHttpsMetadata = false;
     options.SaveToken = true;
+    //Garde les noms de claims de Keycloak ("roles", "preferred_username") au lieu de les convertir
+    options.MapInboundClaims = false;
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = false,
-        ValidateAudience = false
+        //L'audience des tokens Keycloak est "account" : on ne la vérifie pas
+        ValidateAudience = false,
+        RoleClaimType = "roles",
+        NameClaimType = "preferred_username"
     };
     options.Events = new JwtBearerEvents
     {

@@ -20,12 +20,12 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_HOSTNAME: localhost
-      KC_HOSTNAME_PORT: 8180
+      # Émetteur des tokens toujours http://localhost:8180, que l'appel vienne du navigateur ou d'un conteneur
+      KC_HOSTNAME: http://localhost:8180
+      # Les conteneurs joignent Keycloak par http://keycloak:8080 (récupération des clés de signature)
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
       KC_HTTP_ENABLED: "true"
       KC_HEALTH_ENABLED: "true"
-      KC_HOSTNAME_STRICT_BACKCHANNEL: "false"
-      KC_HOSTNAME_STRICT_HTTPS: "false"
     command: start-dev
     ports:
       - "8180:8080"
@@ -45,6 +45,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:5198
+      # Secret lu dans le .env (non versionné) : remplace Keycloak:ClientSecret de appsettings.json
+      Keycloak__ClientSecret: ${KEYCLOAK_CLIENT_SECRET}
     depends_on:
       - postgres
       - keycloak

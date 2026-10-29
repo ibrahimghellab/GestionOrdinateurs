@@ -4,3 +4,13 @@ POST {{AuthentificationApi_HostAddress}}/api/Authentication/login?login=user1
 Accept: application/json
 
 ###
+
+POST {{AuthentificationApi_HostAddress}}/api/Authentication/login-keycloak
+Content-Type: application/json
+
+{
+  "login": "user1",
+  "motDePasse": "1234"
+}
+
+###

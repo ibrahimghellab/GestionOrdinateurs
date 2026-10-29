@@ -22,7 +22,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
         var token = await _sessionStorage.GetItemAsync<string>(CleToken);
         var identity = new ClaimsIdentity();
 
-        //Un token expiré (15 min) ne doit plus faire apparaître l'utilisateur comme connecté
+        //Un token expiré ne doit plus faire apparaître l'utilisateur comme connecté
         if (!string.IsNullOrWhiteSpace(token) && new JwtSecurityTokenHandler().ReadJwtToken(token).ValidTo > DateTime.UtcNow)
         {
             identity = new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt");
@@ -44,7 +44,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(anonymous)));
     }
 
-    //Le token contient les noms courts "role" et "unique_name" : on les remet sous la forme attendue par Blazor
+    //Le token Keycloak contient "roles" et "preferred_username" : on les remet sous la forme attendue par Blazor
     private IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
     {
         var token = new JwtSecurityTokenHandler().ReadJwtToken(jwt);
@@ -52,9 +52,9 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 
         foreach (var claim in token.Claims)
         {
-            if (claim.Type == "role")
+            if (claim.Type == "roles")
                 claims.Add(new Claim(ClaimTypes.Role, claim.Value));
-            else if (claim.Type == "unique_name")
+            else if (claim.Type == "preferred_username")
                 claims.Add(new Claim(ClaimTypes.Name, claim.Value));
             else
                 claims.Add(claim);

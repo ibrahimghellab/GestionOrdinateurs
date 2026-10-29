@@ -1,6 +1,8 @@
 using System.Net;
+using System.Net.Http.Json;
 using Blazored.SessionStorage;
 using GestionOrdinateurs.Client.Utils;
+using GestionOrdinateurs.Shared;
 
 namespace GestionOrdinateurs.Client.Services;
 
@@ -19,16 +21,18 @@ public class AuthentificationService : IAuthentificationService
         _authProvider = authProvider;
     }
 
-    //Renvoie false si l'utilisateur n'existe pas
-    public async Task<bool> ConnecterAsync(string login)
+    //Renvoie false si l'utilisateur ou le mot de passe est incorrect
+    public async Task<bool> ConnecterAsync(string login, string motDePasse)
     {
-        var response = await _httpClient.PostAsync($"api/Authentication/login?login={Uri.EscapeDataString(login)}", null);
+        var identifiants = new Identifiants { Login = login, MotDePasse = motDePasse };
+        var response = await _httpClient.PostAsJsonAsync("api/Authentication/login-keycloak", identifiants);
 
-        if (response.StatusCode == HttpStatusCode.NotFound)
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
             return false;
 
         response.EnsureSuccessStatusCode();
-        var token = await response.Content.ReadAsStringAsync();
+        var tokenKeycloak = await response.Content.ReadFromJsonAsync<TokenKeycloak>();
+        var token = tokenKeycloak?.AccessToken ?? "";
 
         await _sessionStorage.SetItemAsync(JwtAuthenticationStateProvider.CleToken, token);
         _authProvider.NotifyUserAuthentication(token);

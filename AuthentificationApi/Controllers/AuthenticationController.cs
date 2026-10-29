@@ -1,4 +1,5 @@
 using AuthentificationApi.Services;
+using GestionOrdinateurs.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthentificationApi.Controllers;
@@ -13,11 +14,14 @@ public class AuthenticationController : ControllerBase
 
     private readonly ITokenService _tokenService;
 
-    public AuthenticationController(ILogger<AuthenticationController> logger, IUserApiService userApiService, ITokenService tokenService)
+    private readonly IKeycloakService _keycloakService;
+
+    public AuthenticationController(ILogger<AuthenticationController> logger, IUserApiService userApiService, ITokenService tokenService, IKeycloakService keycloakService)
     {
         _logger = logger;
         _userApiService = userApiService;
         _tokenService = tokenService;
+        _keycloakService = keycloakService;
     }
 
     [HttpPost("login")]
@@ -32,5 +36,19 @@ public class AuthenticationController : ControllerBase
 
         _logger.LogInformation("Token généré pour {Login} ({Role})", user.Login, user.Role);
         return Ok(_tokenService.GenererToken(user));
+    }
+
+    [HttpPost("login-keycloak")]
+    public async Task<IActionResult> LoginKeycloak(Identifiants identifiants)
+    {
+        var token = await _keycloakService.ConnecterAsync(identifiants);
+        if (token is null)
+        {
+            _logger.LogWarning("Connexion Keycloak refusée pour {Login}", identifiants.Login);
+            return Unauthorized("Utilisateur ou mot de passe incorrect.");
+        }
+
+        _logger.LogInformation("Token Keycloak obtenu pour {Login}", identifiants.Login);
+        return Ok(token);
     }
 }

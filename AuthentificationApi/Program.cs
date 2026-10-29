@@ -12,6 +12,11 @@ builder.Services.AddHttpClient<IUserApiService, UserApiService>(client =>
 });
 builder.Services.AddScoped<ITokenService, TokenService>();
 
+builder.Services.AddHttpClient<IKeycloakService, KeycloakService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Keycloak:Url"] ?? "");
+});
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorClient", policy =>

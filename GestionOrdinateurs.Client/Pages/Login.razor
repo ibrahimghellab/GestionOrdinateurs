@@ -12,7 +12,12 @@
     <input id="login" class="form-control" @bind="login" />
 </div>
 
-<button class="btn btn-primary" @onclick="SeConnecter" disabled="@string.IsNullOrWhiteSpace(login)">
+<div class="mb-3" style="max-width: 300px">
+    <label for="motDePasse" class="form-label">Mot de passe</label>
+    <input id="motDePasse" type="password" class="form-control" @bind="motDePasse" />
+</div>
+
+<button class="btn btn-primary" @onclick="SeConnecter" disabled="@(string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(motDePasse))">
     Se connecter
 </button>
 
@@ -24,6 +29,8 @@
 @code {
     private string login = "";
 
+    private string motDePasse = "";
+
     private string? messageErreur;
 
     private async Task SeConnecter()
@@ -32,10 +39,10 @@
 
         try
         {
-            if (await AuthentificationService.ConnecterAsync(login))
+            if (await AuthentificationService.ConnecterAsync(login, motDePasse))
                 Navigation.NavigateTo("/");
             else
-                messageErreur = $"L'utilisateur {login} n'existe pas.";
+                messageErreur = "Utilisateur ou mot de passe incorrect.";
         }
         catch (HttpRequestException)
         {
